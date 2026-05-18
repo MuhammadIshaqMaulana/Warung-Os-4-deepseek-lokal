@@ -1,0 +1,351 @@
+# **PRODUCT REQUIREMENTS DOCUMENT (PRD)**
+
+## **Warung OS – Aplikasi Pencatatan Warung Digital**
+
+---
+
+# **1. Overview**
+
+**Warung OS** adalah aplikasi web berbasis **Laravel + PostgreSQL** yang membantu UMKM (warung makan, toko kelontong, usaha rumahan) dalam mengelola:
+
+* Pencatatan penjualan
+* Manajemen stok barang
+* Pembukuan sederhana
+* Pemisahan keuangan pribadi & usaha
+
+### **Problem yang Diselesaikan**
+
+* Tidak ada pencatatan (hanya mengandalkan ingatan)
+* Stok tidak terkontrol
+* Uang usaha tercampur dengan uang pribadi
+* Tidak tahu untung/rugi
+
+### **Target User**
+
+* Pemilik warung kecil
+* UMKM non-digital
+* Pengguna awam (UX harus sangat sederhana)
+
+---
+
+# **2. Requirements**
+
+## **2.1 Functional Requirements**
+
+* User dapat login/register
+* User dapat menambah produk
+* User dapat mencatat transaksi penjualan
+* Sistem otomatis mengurangi stok
+* User dapat melihat laporan keuangan sederhana
+* User dapat melihat riwayat transaksi
+* User dapat mengelola stok barang
+
+## **Non-Functional Requirements**
+
+* Mudah digunakan (UX sederhana)
+* Mobile-friendly (responsive)
+* Performa cepat (<2 detik load)
+* Aman (auth + basic encryption)
+* Bisa digunakan oleh user dengan literasi digital rendah
+* Secure API untuk payment gateway
+* Latency QRIS < 5 detik
+* Data consistency (hindari double transaksi)
+
+### **QRIS Integration**
+
+* Sistem generate QRIS untuk pembayaran
+* User bisa memilih metode pembayaran:
+
+  * Cash
+  * QRIS
+* Status pembayaran:
+
+  * Pending
+  * Paid
+* Callback dari payment gateway (webhook)
+
+---
+
+# **3. Core Features**
+
+## **3.1 Authentication**
+
+* Register
+* Login
+* Logout
+
+## **3.2 Dashboard**
+
+* Total penjualan hari ini
+* Total keuntungan
+* Jumlah stok menipis
+* Ringkasan transaksi
+
+## **3.3 Manajemen Produk**
+
+* Tambah produk
+* Edit produk
+* Hapus produk
+* Kategori produk
+* Harga beli & harga jual
+
+## **3.4 Transaksi Penjualan**
+
+* Input transaksi
+* Pilih produk
+* Input jumlah
+* Hitung otomatis total harga
+* Simpan transaksi
+
+## **3.5 Manajemen Stok** 
+
+* Update stok
+* Notifikasi stok habis/menipis
+* Riwayat perubahan stok
+
+## **3.6 Laporan**
+
+* Laporan harian
+* Laporan bulanan
+* Total omzet
+* Total profit (basic: harga jual - harga beli)
+
+## **3.7 Payment System (QRIS)**
+
+* Pilih metode pembayaran
+* Generate QR Code
+* Auto update status pembayaran
+* Retry pembayaran
+
+---
+
+# **4. User Flow**
+
+## **Flow Utama:**
+
+1. User login
+2. Masuk ke dashboard
+3. Pilih menu transaksi
+4. Pilih produk
+5. Input jumlah
+6. Simpan transaksi
+7. Sistem:
+
+   * Simpan transaksi
+   * Kurangi stok
+   * Update laporan
+
+## **Flow Manajemen Produk**
+
+1. User buka menu produk
+2. Tambah/edit/hapus produk
+3. Data tersimpan ke database
+
+## **Flow Transaksi dengan QRIS**
+
+1. Staff input transaksi
+2. Pilih metode → QRIS
+3. Sistem generate QR
+4. Customer scan QR
+5. Payment gateway kirim callback
+6. Sistem update:
+
+   * Status → PAID
+   * Stok berkurang
+   * Transaksi tersimpan
+
+
+---
+
+# **5. Architecture**
+
+## **Pattern: MVC (Laravel)**
+
+**Frontend**
+
+* Blade / (optional: Vue.js)
+
+**Backend**
+
+* Laravel Controller
+* Service Layer (optional untuk scaling)
+
+**Database**
+
+* PostgreSQL
+
+## **High-Level Architecture**
+
+```
+[ Client (Browser / Mobile) ]
+            ↓
+[ Frontend Layer (Blade / Vue) ]
+            ↓
+[ HTTP Layer (Routes / Middleware) ]
+            ↓
+[ Controller Layer ]
+            ↓
+[ Service Layer ]
+     ↓              ↓
+[ Payment Service ] [ Business Logic Service ]
+     ↓
+[ External Payment Gateway (QRIS) ]
+            ↓
+[ Repository Layer ]
+            ↓
+[ Database (PostgreSQL) ]
+```
+
+---
+
+# **6. Sequence Diagram**
+
+## **Use Case: Input Transaksi**
+
+```
+User → UI → Controller → Service → Database
+
+1. User input transaksi
+2. UI kirim request POST
+3. Controller validasi data
+4. Service:
+   - Hitung total
+   - Update stok
+5. Simpan transaksi ke DB
+6. Return response sukses
+7. UI tampilkan notifikasi
+```
+
+## **QRIS Payment Flow**
+
+```id="seq2"
+User → UI → Backend → Payment Gateway → Backend → DB
+
+1. User pilih QRIS
+2. Backend request QR ke gateway
+3. Gateway return QR Code
+4. User scan & bayar
+5. Gateway kirim webhook
+6. Backend:
+   - Verifikasi signature
+   - Update status transaksi
+7. UI update status
+```
+
+---
+
+# **7. Design & Technical Constraint**
+
+## **Design Constraint**
+
+* UI harus simpel (target user awam)
+* Minim klik
+* Gunakan ikon visual (biar mudah dipahami)
+* Warna kontras (readability tinggi)
+* QR harus besar & jelas
+* Ada countdown pembayaran
+* Status transaksi real-time
+
+## **Technical Constraint**
+
+* Laravel sebagai backend utama
+* PostgreSQL sebagai DB
+* Wajib pakai HTTPS (QRIS requirement)
+* Gunakan webhook verification (signature key)
+* Idempotency (hindari double callback)
+* Hosting low-cost compatible
+* Harus bisa jalan di HP jadul (low resource)
+
+---
+
+# **8. ERD (Entity Relationship Diagram)**
+
+## **Entities**
+
+### **users**
+
+* id
+* name
+* email
+* password
+
+### **products**
+
+* id
+* user_id
+* name
+* category
+* stock
+* buy_price
+* sell_price
+
+### **transactions**
+
+* id
+* user_id
+* total_price
+* created_at
+
+### **transaction_details**
+
+* id
+* transaction_id
+* product_id
+* quantity
+* price
+* method (cash, qris)
+* status (pending, paid, failed)
+* external_id (dari gateway)
+* paid_at
+
+
+### **stock_logs**
+
+* id
+* product_id
+* change_type (in/out)
+* quantity
+* created_at
+
+---
+
+## **Relasi**
+
+* User → Products (1:N)
+* User → Transactions (1:N)
+* Transaction → Transaction Details (1:N)
+* Product → Transaction Details (1:N)
+* Product → Stock Logs (1:N)
+
+---
+
+# **9. Tech Stack**
+
+## **Backend**
+
+* PHP 8+
+* Laravel 12
+
+## **Frontend**
+
+* Blade (default)
+* Tailwind CSS / Bootstrap
+
+## **Database**
+
+* PostgreSQL
+
+## **Authentication**
+
+* Laravel Breeze / Sanctum
+
+## **Deployment**
+
+* VPS / Shared Hosting
+* Nginx / Apache
+
+## **Optional Enhancement**
+
+* Redis (caching)
+* Queue (untuk laporan besar)
+
