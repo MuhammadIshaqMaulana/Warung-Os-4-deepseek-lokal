@@ -43,8 +43,14 @@
                                         <div class="text-xs text-gray-400 font-medium">{{ $trx->created_at->format('H:i:s') }}</div>
                                     </td>
                                     <td class="py-5">
-                                        <div class="font-bold text-gray-800">{{ $detail->product->name ?? 'Produk Dihapus' }}</div>
-                                        <div class="text-xs text-gray-400">{{ $detail->quantity ?? 0 }} item x Rp {{ number_format($detail->price ?? 0, 0, ',', '.') }}</div>
+                                        <div class="font-bold text-gray-800">
+                                            @if($trx->details->count() > 1)
+                                                {{ $trx->details->first()->product->name ?? 'Produk' }} (+{{ $trx->details->count() - 1 }} lainnya)
+                                            @else
+                                                {{ $trx->details->first()->product->name ?? 'Produk Dihapus' }}
+                                            @endif
+                                        </div>
+                                        <div class="text-xs text-gray-400">{{ $trx->details->sum('quantity') }} total item</div>
                                     </td>
                                     <td class="py-5">
                                         <span class="inline-flex items-center px-3 py-1 bg-gray-100 rounded-lg text-[10px] font-black uppercase text-gray-600 tracking-wider">

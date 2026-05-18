@@ -39,15 +39,19 @@
                         </div>
                     </div>
 
-                    <div class="border-y border-dashed border-gray-200 py-6 mb-8">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-sm font-bold text-gray-900">{{ $detail->product->name ?? 'Produk Dihapus' }}</span>
-                            <span class="text-xs font-medium text-gray-400">{{ $detail->quantity }}x</span>
+                    <div class="border-y border-dashed border-gray-200 py-6 mb-8 space-y-4">
+                        @foreach($transaction->details as $detail)
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-bold text-gray-900">{{ $detail->product->name ?? 'Produk Dihapus' }}</span>
+                                <span class="text-xs font-medium text-gray-400">{{ $detail->quantity }}x</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] text-gray-400 uppercase tracking-widest">{{ $detail->product->category ?? 'Umum' }}</span>
+                                <span class="text-sm font-bold text-gray-900">Rp {{ number_format($detail->price * $detail->quantity, 0, ',', '.') }}</span>
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs text-gray-400">Harga Satuan</span>
-                            <span class="text-sm font-bold text-gray-900">Rp {{ number_format($detail->price, 0, ',', '.') }}</span>
-                        </div>
+                        @endforeach
                     </div>
 
                     <div class="flex justify-between items-center mb-8">
