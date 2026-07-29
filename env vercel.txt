@@ -1,0 +1,19 @@
+APP_KEY=base64:7wfblXmlqKlc4rOZjGrod3Sq6vdryOmBGWXpkFRB8JM=
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://nama-project.vercel.app
+
+DB_CONNECTION=pgsql
+DB_HOST=ep-raspy-dream-aujogeh8-pooler.c-10.us-east-1.aws.neon.tech
+DB_PORT=5432
+DB_DATABASE=neondb
+DB_USERNAME=neondb_owner
+DB_PASSWORD=npg_BjfevWD83Yxa
+DB_SSLMODE=require
+
+# Atau bisa pakai DB_URL langsung:
+# DB_URL=postgresql://neondb_owner:npg_BjfevWD83Yxa@ep-raspy-dream-aujogeh8-pooler.c-10.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+SESSION_DRIVER=cookie
+CACHE_STORE=array
+FILESYSTEM_DISK=public
