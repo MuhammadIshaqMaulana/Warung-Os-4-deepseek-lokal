@@ -186,6 +186,15 @@
                             <h4 class="text-3xl font-black text-[#41322A]" x-text="formatCurrency(totalPrice)"></h4>
                         </div>
 
+                        @if ($errors->any())
+                        <div class="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 space-y-1" role="alert">
+                            <p class="font-black text-xs uppercase tracking-widest">Transaksi gagal disimpan</p>
+                            @foreach ($errors->all() as $error)
+                                <p class="text-xs font-bold">{{ $error }}</p>
+                            @endforeach
+                        </div>
+                        @endif
+
                         <form method="POST" action="{{ route('transactions.store') }}" onsubmit="if (this.submitted) return false; this.submitted = true;">
                             @csrf
                             <input type="hidden" name="method" :value="paymentMethod">

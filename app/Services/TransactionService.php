@@ -22,6 +22,10 @@ class TransactionService
     {
         $items = $this->mergeItems($items);
 
+        if ($items === []) {
+            throw new \RuntimeException('Keranjang kosong atau jumlah produk tidak valid. Pilih produk terlebih dahulu.');
+        }
+
         return DB::transaction(function () use ($userId, $items, $method) {
             $totalPrice = 0;
             $process = [];

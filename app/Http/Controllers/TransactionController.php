@@ -8,7 +8,9 @@ use App\Services\QrisService;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
 {
@@ -83,12 +85,26 @@ class TransactionController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*.id' => 'required|integer',
-            'items.*.quantity' => 'required|integer|min:1|max:10000',
-            'method' => ['required', Rule::in([Transaction::METHOD_CASH, Transaction::METHOD_QRIS])],
-        ]);
+        try {
+            $validated = $request->validate([
+                'items' => 'required|array|min:1',
+                'items.*.id' => 'required|integer',
+                'items.*.quantity' => 'required|integer|min:1|max:10000',
+                'method' => ['required', Rule::in([Transaction::METHOD_CASH, Transaction::METHOD_QRIS])],
+            ]);
+        } catch (ValidationException $e) {
+            Log::warning('Transaksi ditolak: payload tidak valid', [
+                'user_id' => Auth::id(),
+                'errors' => $e->errors(),
+                'items' => $request->input('items'),
+                'method' => $request->input('method'),
+            ]);
+
+            return redirect()
+                ->route('transactions.create')
+                ->withErrors($e->errors())
+                ->withInput();
+        }
 
         try {
             $transaction = $this->transactions->create(
@@ -97,7 +113,16 @@ class TransactionController extends Controller
                 $validated['method']
             );
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['error' => $e->getMessage()])->withInput();
+            Log::warning('Transaksi gagal disimpan: '.$e->getMessage(), [
+                'user_id' => Auth::id(),
+                'items' => $validated['items'],
+                'method' => $validated['method'],
+            ]);
+
+            return redirect()
+                ->route('transactions.create')
+                ->withErrors(['error' => $e->getMessage()])
+                ->withInput();
         }
 
         if ($transaction->method === Transaction::METHOD_QRIS) {

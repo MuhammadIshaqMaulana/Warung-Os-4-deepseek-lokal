@@ -76,6 +76,47 @@ class TransactionFlowTest extends TestCase
         $this->assertSame(2, $product->fresh()->stock);
     }
 
+    public function test_validation_error_is_visible_after_failed_submission(): void
+    {
+        $user = $this->user();
+
+        $response = $this->actingAs($user)
+            ->from(route('transactions.create'))
+            ->followingRedirects()
+            ->post('/transactions', [
+                'items' => [],
+                'method' => 'cash',
+            ]);
+
+        $response->assertOk()
+            ->assertSee('Data belum tersimpan')
+            ->assertSee('daftar produk')
+            ->assertSee('wajib diisi');
+
+        $this->assertSame(0, Transaction::count());
+    }
+
+    public function test_stock_error_message_is_visible_after_failed_submission(): void
+    {
+        $user = $this->user();
+        $product = $this->product($user, ['stock' => 2]);
+
+        $response = $this->actingAs($user)
+            ->from(route('transactions.create'))
+            ->followingRedirects()
+            ->post('/transactions', [
+                'items' => [['id' => $product->id, 'quantity' => 5]],
+                'method' => 'cash',
+            ]);
+
+        $response->assertOk()
+            ->assertSee('Transaksi gagal disimpan')
+            ->assertSee('tidak mencukupi');
+
+        $this->assertSame(0, Transaction::count());
+        $this->assertSame(2, $product->fresh()->stock);
+    }
+
     public function test_duplicate_items_are_merged_into_one_detail(): void
     {
         $user = $this->user();
