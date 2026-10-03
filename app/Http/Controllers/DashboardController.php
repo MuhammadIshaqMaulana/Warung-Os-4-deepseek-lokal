@@ -5,72 +5,75 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use App\Services\TransactionService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(TransactionService $transactions)
     {
+        // Vercel tidak menjalankan scheduler, jadi kedaluwarsa dibersihkan saat dibuka
+        $transactions->expireOverdue();
+
         $userId = Auth::id();
         $today = Carbon::today();
+        $threshold = (int) config('qris.low_stock_threshold', 5);
 
-        // Total penjualan hari ini (status paid)
-        $todaySales = Transaction::where('user_id', $userId)
-            ->whereDate('created_at', $today)
-            ->whereHas('details', function($q) {
-                $q->where('status', 'paid');
-            })
-            ->sum('total_price');
+        $todayQuery = fn () => Transaction::where('user_id', $userId)
+            ->whereDate('created_at', $today);
 
-        // Total keuntungan hari ini (harga jual - harga beli * quantity)
-        $todayProfit = TransactionDetail::whereHas('transaction', function($q) use ($userId, $today) {
-            $q->where('user_id', $userId)->whereDate('created_at', $today);
+        // Omzet hari ini (transaksi lunas)
+        $todaySales = $todayQuery()->paid()->sum('total_price');
+
+        // Profit hari ini (harga jual - harga beli) x jumlah
+        $todayProfit = TransactionDetail::whereHas('transaction', function ($q) use ($userId, $today) {
+            $q->where('user_id', $userId)->whereDate('created_at', $today)->paid();
         })
-        ->where('status', 'paid')
-        ->with('product')
-        ->get()
-        ->sum(function ($detail) {
-            $profitPerItem = $detail->price - ($detail->product->buy_price ?? 0);
-            return $profitPerItem * $detail->quantity;
-        });
+            ->join('products', 'products.id', '=', 'transaction_details.product_id')
+            ->selectRaw('COALESCE(SUM((transaction_details.price - products.buy_price) * transaction_details.quantity), 0) as profit')
+            ->value('profit') ?? 0;
 
-        // Jumlah stok menipis (stok < 5)
+        // Menunggu pembayaran QRIS
+        $pendingAmount = Transaction::where('user_id', $userId)->pending()->sum('total_price');
+        $pendingCount = Transaction::where('user_id', $userId)->pending()->count();
+
+        // Stok menipis & habis
         $lowStockProducts = Product::where('user_id', $userId)
-            ->where('stock', '<', 5)
+            ->where('stock', '<=', $threshold)
+            ->orderBy('stock')
             ->get();
-            
-        $lowStockCount = $lowStockProducts->count();
 
-        // Ringkasan transaksi terbaru
+        $lowStockCount = $lowStockProducts->count();
+        $outOfStockCount = Product::where('user_id', $userId)->where('stock', '<=', 0)->count();
+
+        // Ringkasan transaksi
         $recentTransactions = Transaction::where('user_id', $userId)
             ->with(['details.product'])
             ->latest()
             ->take(5)
             ->get();
 
-        // Jumlah transaksi hari ini
-        $todayTransactionsCount = Transaction::where('user_id', $userId)
-            ->whereDate('created_at', $today)
-            ->count();
+        $todayTransactionsCount = $todayQuery()->count();
 
-        // Ringkasan transaksi harian (Timeline)
-        $timelineTransactions = Transaction::where('user_id', $userId)
+        $timelineTransactions = $todayQuery()
             ->with(['details.product'])
-            ->whereDate('created_at', $today)
             ->latest()
             ->take(10)
             ->get();
 
         return view('dashboard', compact(
-            'todaySales', 
-            'todayProfit', 
-            'lowStockCount', 
-            'lowStockProducts', 
+            'todaySales',
+            'todayProfit',
+            'pendingAmount',
+            'pendingCount',
+            'lowStockCount',
+            'outOfStockCount',
+            'lowStockProducts',
             'recentTransactions',
             'todayTransactionsCount',
-            'timelineTransactions'
+            'timelineTransactions',
+            'threshold'
         ));
     }
 }

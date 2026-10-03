@@ -12,6 +12,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::where('user_id', Auth::id())->paginate(10);
+
         return view('products.index', compact('products'));
     }
 
@@ -39,6 +40,7 @@ class ProductController extends Controller
                 'product_id' => $product->id,
                 'change_type' => 'in',
                 'quantity' => $product->stock,
+                'note' => 'Stok awal produk',
             ]);
         }
 
@@ -50,6 +52,7 @@ class ProductController extends Controller
         if ($product->user_id !== Auth::id()) {
             abort(403);
         }
+
         return view('products.edit', compact('product'));
     }
 
@@ -76,6 +79,7 @@ class ProductController extends Controller
                 'product_id' => $product->id,
                 'change_type' => $diff > 0 ? 'in' : 'out',
                 'quantity' => abs($diff),
+                'note' => 'Penyesuaian saat edit produk',
             ]);
         }
 
@@ -89,6 +93,7 @@ class ProductController extends Controller
         }
 
         $product->delete();
+
         return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus.');
     }
 }

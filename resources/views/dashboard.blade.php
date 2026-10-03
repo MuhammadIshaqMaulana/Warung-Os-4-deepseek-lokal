@@ -29,7 +29,7 @@
                     <svg class="w-4 h-4 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 </div>
                 <h3 class="text-3xl font-black mb-2">{{ $lowStockCount }} item</h3>
-                <p class="text-[10px] text-white/60 leading-relaxed text-balance">Barang yang mulai rawan kosong dan sebaiknya segera dicek.</p>
+                <p class="text-[10px] text-white/60 leading-relaxed text-balance">{{ $outOfStockCount }} habis, sisanya ≤ {{ $threshold }}. Segera restok.</p>
             </div>
 
             <!-- Profit (Replcing Kasbon from image) -->
@@ -41,6 +41,52 @@
                 <h3 class="text-3xl font-black text-[#41322A] mb-2">Rp {{ number_format($todayProfit, 0, ',', '.') }}</h3>
                 <p class="text-[10px] text-[#A39284] leading-relaxed">Total margin keuntungan dari penjualan hari ini.</p>
             </div>
+        </div>
+
+        @if($pendingCount > 0)
+        <a href="{{ route('transactions.index', ['status' => 'pending']) }}" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#41322A] text-white p-6 rounded-[2rem] shadow-lg mb-10 hover:bg-[#2D231C] transition-colors">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-[#A35322] rounded-2xl flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="font-black text-lg">Rp {{ number_format($pendingAmount, 0, ',', '.') }} menunggu pembayaran QRIS</p>
+                    <p class="text-xs text-white/60 font-bold">{{ $pendingCount }} transaksi belum lunas — cek struknya sekarang.</p>
+                </div>
+            </div>
+            <span class="text-xs font-black uppercase tracking-widest bg-white/10 px-5 py-3 rounded-2xl self-start sm:self-center">Buka &rarr;</span>
+        </a>
+        @endif
+
+        <!-- Aksi cepat -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            <a href="{{ route('transactions.create') }}" class="bg-white border border-[#E8E1D5] rounded-3xl p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div class="w-11 h-11 bg-[#A35322] text-white rounded-2xl flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <div>
+                    <p class="font-black text-sm text-[#41322A]">Buka Kasir</p>
+                    <p class="text-[10px] text-[#A39284] font-bold uppercase tracking-widest">Catat penjualan baru</p>
+                </div>
+            </a>
+            <a href="{{ route('stocks.index') }}" class="bg-white border border-[#E8E1D5] rounded-3xl p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div class="w-11 h-11 bg-[#E9F3E8] text-[#5E7A5E] rounded-2xl flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                </div>
+                <div>
+                    <p class="font-black text-sm text-[#41322A]">Update Stok</p>
+                    <p class="text-[10px] text-[#A39284] font-bold uppercase tracking-widest">Restok & riwayat</p>
+                </div>
+            </a>
+            <a href="{{ route('reports.index') }}" class="bg-white border border-[#E8E1D5] rounded-3xl p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div class="w-11 h-11 bg-[#F7F2E9] text-[#A35322] rounded-2xl flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                    <p class="font-black text-sm text-[#41322A]">Laporan</p>
+                    <p class="text-[10px] text-[#A39284] font-bold uppercase tracking-widest">Omzet & profit</p>
+                </div>
+            </a>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -62,7 +108,7 @@
 
                         @if($latestTrx)
                         <h4 class="text-4xl font-black mb-1">Rp {{ number_format($latestTrx->total_price, 0, ',', '.') }}</h4>
-                        <p class="text-xs font-bold opacity-50 mb-10 uppercase tracking-widest">{{ strtoupper($latestTrx->details->first()->method ?? 'Tunai') }} • {{ $latestTrx->created_at->format('H.i') }}</p>
+                        <p class="text-xs font-bold opacity-50 mb-10 uppercase tracking-widest">{{ $latestTrx->methodLabel() }} • {{ $latestTrx->created_at->format('H.i') }} • {{ $latestTrx->statusLabel() }}</p>
 
                         <div class="space-y-4">
                             @foreach($latestTrx->details as $item)
@@ -92,7 +138,7 @@
                                 <div>
                                     <p class="text-lg font-black text-[#41322A]">Rp {{ number_format($trx->total_price, 0, ',', '.') }}</p>
                                     <p class="text-[10px] font-bold text-[#A39284] uppercase tracking-widest">
-                                        {{ $trx->details->first()->quantity ?? 1 }} produk • {{ strtoupper($trx->details->first()->method ?? 'Tunai') }}
+                                        {{ $trx->details->sum('quantity') }} item • {{ $trx->methodLabel() }} • {{ $trx->statusLabel() }}
                                     </p>
                                 </div>
                                 <div class="text-right">
@@ -112,7 +158,7 @@
 
                 <div class="space-y-4">
                     @forelse($lowStockProducts as $product)
-                    <div class="bg-white p-5 rounded-[2rem] border border-[#E8E1D5] shadow-sm flex items-center group hover:bg-[#FAF6F0] transition-colors">
+                    <a href="{{ route('stocks.index', ['product_id' => $product->id]) }}" class="bg-white p-5 rounded-[2rem] border border-[#E8E1D5] shadow-sm flex items-center group hover:bg-[#FAF6F0] transition-colors">
                         <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center mr-4 group-hover:bg-white transition-colors">
                             <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                         </div>
@@ -121,11 +167,11 @@
                             <p class="text-[10px] text-[#A39284] font-bold uppercase tracking-widest">{{ $product->category ?? 'Umum' }}</p>
                         </div>
                         <div class="text-right">
-                            <div class="inline-block px-3 py-1 bg-[#A35322] text-white text-[10px] font-black rounded-full shadow-sm">
-                                {{ $product->stock }} / <span class="opacity-60 font-medium">min 5</span>
+                            <div class="inline-block px-3 py-1 {{ $product->stock <= 0 ? 'bg-rose-600' : 'bg-[#A35322]' }} text-white text-[10px] font-black rounded-full shadow-sm">
+                                {{ $product->stock }} / <span class="opacity-60 font-medium">min {{ $threshold }}</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
                     @empty
                     <div class="bg-white/50 p-10 rounded-[2rem] border border-dashed border-[#E8E1D5] text-center">
                         <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">

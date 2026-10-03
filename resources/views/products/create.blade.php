@@ -24,12 +24,9 @@
                             <div>
                                 <label for="category" class="block text-xs font-black text-[#A39284] uppercase tracking-widest mb-2">Kategori</label>
                                 <select id="category" name="category" class="block w-full bg-[#F7F2E9] border-transparent focus:border-[#A35322] focus:bg-white focus:ring-4 focus:ring-[#A35322]/10 rounded-2xl py-4 font-bold text-[#41322A] transition-all">
-                                    <option value="Umum">Umum</option>
-                                    <option value="Makanan">Makanan</option>
-                                    <option value="Minuman">Minuman</option>
-                                    <option value="Sembako">Sembako</option>
-                                    <option value="Harian">Harian</option>
-                                    <option value="Lainnya">Lainnya</option>
+                                    @foreach(['Umum', 'Makanan', 'Minuman', 'Sembako', 'Harian', 'Lainnya'] as $option)
+                                    <option value="{{ $option }}" {{ old('category', 'Umum') === $option ? 'selected' : '' }}>{{ $option }}</option>
+                                    @endforeach
                                 </select>
                                 @error('category')<span class="text-rose-500 text-xs mt-1 font-bold">{{ $message }}</span>@enderror
                             </div>

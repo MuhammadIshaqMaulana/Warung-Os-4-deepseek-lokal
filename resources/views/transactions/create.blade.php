@@ -79,7 +79,7 @@
 
                 <!-- Categories -->
                 <div class="flex flex-wrap gap-3 mb-10">
-                    <template x-for="cat in ['Semua', 'Makanan', 'Minuman', 'Sembako', 'Harian', 'Lainnya']">
+                    <template x-for="cat in {{ json_encode(array_merge(['Semua'], $categories->all())) }}" :key="cat">
                         <button 
                             @click="category = cat"
                             :class="category === cat ? 'bg-[#A35322] text-white shadow-lg shadow-orange-100' : 'bg-white text-[#7A6A5E] hover:bg-[#F0EAE0]'"
@@ -91,6 +91,14 @@
 
                 <!-- Product Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-20">
+                    <template x-if="filteredProducts.length === 0">
+                        <div class="col-span-full bg-white/60 border border-dashed border-[#E8E1D5] rounded-[2.5rem] p-12 text-center">
+                            <p class="font-black text-[#41322A]">Produk tidak ditemukan</p>
+                            <p class="text-sm text-[#A39284] mt-1">Coba kata kunci lain, atau tambahkan produk baru di Inventaris.</p>
+                            <a href="{{ route('products.create') }}" class="inline-block mt-6 px-6 py-3 bg-[#A35322] text-white rounded-2xl font-black text-xs uppercase tracking-widest">Tambah Produk</a>
+                        </div>
+                    </template>
+
                     <template x-for="product in filteredProducts" :key="product.id">
                         <div class="bg-white p-6 rounded-[2.5rem] border border-[#E8E1D5] shadow-sm group hover:shadow-md transition-all relative overflow-hidden">
                             <div class="flex justify-between items-start mb-6">
@@ -178,7 +186,7 @@
                             <h4 class="text-3xl font-black text-[#41322A]" x-text="formatCurrency(totalPrice)"></h4>
                         </div>
 
-                        <form method="POST" action="{{ route('transactions.store') }}">
+                        <form method="POST" action="{{ route('transactions.store') }}" onsubmit="if (this.submitted) return false; this.submitted = true;">
                             @csrf
                             <input type="hidden" name="method" :value="paymentMethod">
                             <template x-for="(item, index) in cart" :key="item.id">
@@ -194,7 +202,7 @@
                                 :class="cart.length === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02] shadow-xl shadow-orange-100'"
                                 class="w-full bg-[#A35322] text-white py-4 rounded-3xl font-black text-lg transition-all flex items-center justify-center gap-3"
                             >
-                                Selesaikan transaksi
+                                <span x-text="cart.length === 0 ? 'Pilih produk dulu' : 'Bayar ' + formatCurrency(totalPrice)"></span>
                             </button>
                         </form>
                     </div>
