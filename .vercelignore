@@ -4,6 +4,9 @@
 .env
 .env.*
 !.env.example
+/NEONDB.txt
+/env*.txt
+*.credentials.txt
 /tests
 .git
 .github

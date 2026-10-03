@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Product;
+use App\Models\StockLog;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -12,9 +14,11 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = \App\Models\User::where('email', 'a@a.com')->first();
-        
-        if (!$user) return;
+        $user = User::where('email', 'a@a.com')->first();
+
+        if (! $user) {
+            return;
+        }
 
         $products = [
             ['name' => 'Beras Pandan Wangi 5kg', 'category' => 'Sembako', 'buy_price' => 65000, 'sell_price' => 72000, 'stock' => 10],
@@ -45,13 +49,13 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as $p) {
-            $product = \App\Models\Product::updateOrCreate(
+            $product = Product::updateOrCreate(
                 ['user_id' => $user->id, 'name' => $p['name']],
                 $p
             );
 
             // Add initial stock log
-            \App\Models\StockLog::create([
+            StockLog::create([
                 'product_id' => $product->id,
                 'change_type' => 'in',
                 'quantity' => $p['stock'],

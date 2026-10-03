@@ -3,6 +3,11 @@
 .env
 .env.backup
 .env.production
+# Kredensial & catatan deploy — JANGAN pernah di-commit
+/NEONDB.txt
+/env vercel.txt
+/env*.txt
+*.credentials.txt
 .phpactor.json
 .phpunit.result.cache
 /.codex
