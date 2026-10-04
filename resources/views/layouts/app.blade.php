@@ -19,9 +19,7 @@
             <!-- Sidebar -->
             <aside class="w-16 sm:w-20 lg:w-72 bg-[#FAF6F0] h-screen p-3 lg:p-6 flex flex-col border-r border-[#E8E1D5] flex-shrink-0 transition-all duration-300">
                 <div class="bg-[#41322A] text-white p-3 lg:p-4 rounded-2xl lg:rounded-3xl flex items-center mb-8 lg:mb-10 shadow-lg overflow-hidden">
-                    <div class="bg-[#A35322] p-2 rounded-xl flex-shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    </div>
+                    <div class="bg-[#A35322] p-2 rounded-xl flex-shrink-0 w-9 h-9 flex items-center justify-center text-xl leading-none select-none" aria-hidden="true">🏠</div>
                     <span class="font-bold text-sm truncate ml-3 hidden lg:block">{{ Auth::user()->name }}</span>
                 </div>
 

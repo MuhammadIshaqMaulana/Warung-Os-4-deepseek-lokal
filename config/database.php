@@ -97,6 +97,12 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Neon pooler (pgbouncer) memutus transaksi pada statement ke-2
+            // saat prepared statement aktif (SQLSTATE[25P02]). Kirim statement
+            // sebagai query biasa agar transaksi multi-statement tetap utuh.
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
+            ] : [],
         ],
 
         'sqlsrv' => [

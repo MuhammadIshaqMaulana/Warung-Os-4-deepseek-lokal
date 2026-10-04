@@ -255,6 +255,7 @@ Konfigurasi yang sudah ada:
 | Filesystem read-only | Hanya `/tmp` yang bisa ditulis | Log & cache view diarahkan ke `/tmp` (`api/index.php`) |
 | Instance bersifat sementara | `array` cache & `cookie` session tidak lintas-instance | Tidak ada data penting di cache/session selain flash & preferensi |
 | `qris:expire` | Tidak dapat dijadwalkan | Opsional: panggil via cron eksternal (mis. Vercel Cron) bila ingin expiry tanpa perlu user membuka halaman |
+| Neon pooler (pgbouncer) | Transaksi multi-statement gagal di statement ke-2 dengan `SQLSTATE[25P02]` saat prepared statement aktif | `config/database.php` menyetel `PDO::PGSQL_ATTR_DISABLE_PREPARES => true` agar statement dikirim sebagai query biasa (sudah diverifikasi: pooler + opsi ini = transaksi penuh sukses) |
 
 Untuk Vercel Cron opsional, tambahkan `vercel.json` → `"crons": [{ "path": "/cron/qris-expire", "schedule": "*/5 * * * *" }]` dan buat route proteksi yang memanggil `php artisan qris:expire` (belum tersedia saat ini).
 
@@ -267,7 +268,7 @@ composer test          # atau: php artisan test
 vendor/bin/pint        # format kode (gaya Laravel)
 ```
 
-- **64 test / 236 assertion** — mencakup alur produk, transaksi kasir & QRIS, webhook (signature, idempoten), laporan, inventaris, dan render halaman.
+- **66 test / 246 assertion** — mencakup alur produk, transaksi kasir & QRIS, webhook (signature, idempoten), laporan, inventaris, render halaman, serta visibilitas pesan error saat transaksi gagal.
 - Test memakai **SQLite in-memory** (`phpunit.xml`), jadi tidak menyentuh database produksi.
 
 ---
